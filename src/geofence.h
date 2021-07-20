@@ -30,11 +30,27 @@ Vector<GeofenceEventCallback> ExitCallback;
 class Geofence {
 public:
 
+    enum class EventType{
+        INSIDE,
+        OUTSIDE,
+        ENTER,
+        EXIT,
+    };
+
     typedef struct {
         time_t epochTime;               /**< Epoch time from device sources */
         float latitude;                 /**< Point latitude in degrees */
         float longitude;                /**< Point longitude in degrees */
     } point_data_t;
+
+    typedef struct {
+        float radius; //radius in meters that define the geofence zone boundary
+        float center_lat;                 /**< Center point latitude in degrees */
+        float center_lon;                /**< Center point longitude in degrees */
+        uint8_t confidence_number; //a number to reduce false positives
+        bool enable; //enable or disable the geofence zone
+        EventType type; //type of event to trigger
+    } zone_info_t;
 
     Geofence& instance() {
         static Geofence instance;
@@ -56,6 +72,15 @@ public:
      * the event type conditions are met (outside, inside, enter, exit) 
      */
     void loop();
+
+    /**
+     * @brief <enter a brief one sentence description>
+     *
+     * @details <details of the function>
+     *
+     * @param[in,out] <name of variable> <description of variable>
+     */
+    void SetZoneInfo(zone_info_t zone_config);
 
     /**
      * @brief Pass the point data to be used to calculate boundary
