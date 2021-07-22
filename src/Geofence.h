@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Particle.h"
+#include <atomic>
 
 /**
  * @brief Type definition of geofence event callback signature.
@@ -37,9 +38,12 @@ enum class ZoneType {
 };
 
 struct PointData {
-    time_t epochTime; /**< Epoch time from device sources */
     double lat; /**< Point latitude in degrees */
     double lon; /**< Point longitude in degrees */
+    bool operator!=(const PointData& other) const {
+        if((lat != other.lat) && (lon != other.lon)) {return true;}
+        else {return false;}
+    }
 };
 
 struct ZoneInfo {
@@ -47,7 +51,7 @@ struct ZoneInfo {
             confidence_number(0), enable(false), 
             event_type(GeofenceEventType::UNKNOWN), 
             zone_type(ZoneType::CIRCULAR) {}
-    float radius; //radius in meters that define the geofence zone boundary
+    double radius; //radius in meters that define the geofence zone boundary
     double center_lat;                 /**< Center point latitude in degrees */
     double center_lon;                /**< Center point longitude in degrees */
     uint8_t confidence_number; //a number to reduce false positives
@@ -116,7 +120,10 @@ public:
      * @param[in] PointData point to be passed for calculation
      */
     void UpdateGeofencePoint(PointData& point) {
-        _geofence_point = point;
+        if(_geofence_point != point) {
+            _geofence_point = point;
+            new_point.test_and_set();
+        }
     }
 
     /**
@@ -164,6 +171,21 @@ public:
     int RegisterExitGeofence(GeofenceEventCallback callback);
 
 private:
+    /**
+     * \brief           Calculate distance and bearing between `2` latitude and longitude coordinates
+     * \param[in]       las: Latitude start coordinate, in units of degrees
+     * \param[in]       los: Longitude start coordinate, in units of degrees
+     * \param[in]       lae: Latitude end coordinate, in units of degrees
+     * \param[in]       loe: Longitude end coordinate, in units of degrees
+     * \param[out]      d: reference to output distance in units of meters
+     * \return          `1` on success, `0` otherwise
+     */
+    inline void GpsDistance(double las, 
+                            double los, 
+                            double lae, 
+                            double loe, 
+                            double& d);
+
     Vector<ZoneInfo> GeofenceZones;
     Vector<GeofenceEventCallback> OutsideCallback;
     Vector<GeofenceEventCallback> InsideCallback;
@@ -171,4 +193,5 @@ private:
     Vector<GeofenceEventCallback> ExitCallback;
 
     PointData _geofence_point;
+    std::atomic_flag new_point = ATOMIC_FLAG_INIT;
 };

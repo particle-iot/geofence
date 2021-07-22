@@ -21,48 +21,45 @@
 #define D2R(x) ((x) * (0.01745329251994)) /*!< Degrees to radians */
 #define EARTH_RADIUS (6371.0) /*!< Earth radius in units of kilometers */
 
-static void gps_distance(double las, 
-                            double los, 
-                            double lae, 
-                            double loe, 
-                            double& d);
-
 void Geofence::init() {
 
 }
 
 void Geofence::loop() {
-    for(auto zone : GeofenceZones) {
-        if(zone.enable) {
-            double distance;
-            gps_distance(zone.center_lat, 
-                        zone.center_lon, 
-                        _geofence_point.lat, 
-                        _geofence_point.lon, 
-                        distance);
-            if(distance > zone.radius) {
-                if(zone.event_type == GeofenceEventType::OUTSIDE) {
-                    for(auto callback : OutsideCallback) {
-                        callback();
+    if(new_point.test_and_set()) {
+        for(auto zone : GeofenceZones) {
+            if(zone.enable) {
+                double distance;
+                GpsDistance(zone.center_lat, 
+                            zone.center_lon, 
+                            _geofence_point.lat, 
+                            _geofence_point.lon, 
+                            distance);
+                if(distance > zone.radius) {
+                    if(zone.event_type == GeofenceEventType::OUTSIDE) {
+                        for(auto callback : OutsideCallback) {
+                            callback();
+                        }
                     }
-                }
-                else if(zone.event_type == GeofenceEventType::INSIDE) {
-                    for(auto callback : InsideCallback) {
-                        callback();
+                    else if(zone.event_type == GeofenceEventType::INSIDE) {
+                        for(auto callback : InsideCallback) {
+                            callback();
+                        }
                     }
-                }
-                else if(zone.event_type == GeofenceEventType::ENTER) {
-                    for(auto callback : EnterCallback) {
-                        callback();
+                    else if(zone.event_type == GeofenceEventType::ENTER) {
+                        for(auto callback : EnterCallback) {
+                            callback();
+                        }
                     }
-                }
-                else if(zone.event_type == GeofenceEventType::EXIT) {
-                    for(auto callback : ExitCallback) {
-                        callback();
+                    else if(zone.event_type == GeofenceEventType::EXIT) {
+                        for(auto callback : ExitCallback) {
+                            callback();
+                        }
                     }
                 }
             }
         }
+        new_point.clear();
     }
 }
 
@@ -81,21 +78,12 @@ int Geofence::RegisterEnterGeofence(GeofenceEventCallback callback) {
     return SYSTEM_ERROR_NONE;
 }
 
-int Geofence:: RegisterExitGeofence(GeofenceEventCallback callback) {
+int Geofence::RegisterExitGeofence(GeofenceEventCallback callback) {
     ExitCallback.append(callback);
     return SYSTEM_ERROR_NONE;
 }
 
-/**
- * \brief           Calculate distance and bearing between `2` latitude and longitude coordinates
- * \param[in]       las: Latitude start coordinate, in units of degrees
- * \param[in]       los: Longitude start coordinate, in units of degrees
- * \param[in]       lae: Latitude end coordinate, in units of degrees
- * \param[in]       loe: Longitude end coordinate, in units of degrees
- * \param[out]      d: reference to output distance in units of meters
- * \return          `1` on success, `0` otherwise
- */
-static void gps_distance(double las, 
+void Geofence::GpsDistance(double las, 
                             double los, 
                             double lae, 
                             double loe, 
