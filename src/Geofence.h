@@ -94,6 +94,20 @@ public:
     }
 
     /**
+     * @brief Gets the zone info for a given index
+     *
+     * @details Number of zones are created by the Geofence ctor, and this 
+     * function returns references to the zone info
+     *
+     * @param[in] index index of vector to get the zone info
+     * 
+     * @return reference to requested zone info
+     */
+    ZoneInfo& GetZoneInfo(int index) {
+        return GeofenceZones.at(index);
+    }
+
+    /**
      * @brief Pass the point data to be used to calculate boundary
      *
      * @details This function is called to pass point information that is
