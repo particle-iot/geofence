@@ -25,16 +25,11 @@
 using GeofenceEventCallback = std::function<void(void)>;
 
 enum class GeofenceEventType {
+    UNKNOWN,
     INSIDE,
     OUTSIDE,
     ENTER,
     EXIT,
-    UNKNOWN,
-};
-
-enum class ZoneType {
-    CIRCULAR,
-    POLYGONAL,
 };
 
 struct PointData {
@@ -47,17 +42,12 @@ struct PointData {
 };
 
 struct ZoneInfo {
-    ZoneInfo() : radius(0), center_lat(0), center_lon(0), 
-            confidence_number(0), enable(false), 
-            event_type(GeofenceEventType::UNKNOWN), 
-            zone_type(ZoneType::CIRCULAR) {}
-    double radius; //radius in meters that define the geofence zone boundary
-    double center_lat;                 /**< Center point latitude in degrees */
-    double center_lon;                /**< Center point longitude in degrees */
-    uint8_t confidence_number; //a number to reduce false positives
-    bool enable; //enable or disable the geofence zone
-    GeofenceEventType event_type; //type of event to trigger
-    ZoneType zone_type;
+    double radius{0.0}; //radius in meters that define the geofence zone boundary
+    double center_lat{0.0};                 /**< Center point latitude in degrees */
+    double center_lon{0.0};                /**< Center point longitude in degrees */
+    uint8_t confidence_number{0}; //a number to reduce false positives
+    bool enable{false}; //enable or disable the geofence zone
+    GeofenceEventType event_type{GeofenceEventType::UNKNOWN}; //type of event to trigger
 };
 
 class Geofence {
@@ -92,7 +82,7 @@ public:
      * @param[in] index index of vector to store the zone info
      * @param[in] zone_config reference to the zone info you want to set to
      */
-    void SetZoneInfo(int index, ZoneInfo& zone_config) {
+    void SetZoneInfo(int index, const ZoneInfo& zone_config) {
         auto zone = GeofenceZones.at(index);
         zone = zone_config;
     }
@@ -119,7 +109,7 @@ public:
      *
      * @param[in] PointData point to be passed for calculation
      */
-    void UpdateGeofencePoint(PointData& point) {
+    void UpdateGeofencePoint(const PointData& point) {
         if(_geofence_point != point) {
             _geofence_point = point;
             new_point.test_and_set();
