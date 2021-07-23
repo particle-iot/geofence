@@ -102,7 +102,8 @@ public:
     }
 
     /**
-     * @brief Pass the point data to be used to calculate boundary
+     * @brief Pass the point data to be used to calculate boundary. Only writes
+     * if there is a change to the stored _geofence_point
      *
      * @details This function is called to pass point information that is
      * used in the tick() function to calculate geofence bounds
@@ -175,6 +176,16 @@ private:
                             double lae, 
                             double loe, 
                             double& d);
+    /**
+     * @brief Convert value from degrees to radians
+     *
+     * @details converts values from degrees to radians using a constant
+     *
+     * @param[in] x value in degrees
+     *
+     * @return value in radians
+     */
+    inline double D2R(double x) {return ((x) * (0.01745329251994));}
 
     Vector<ZoneInfo> GeofenceZones;
     Vector<GeofenceEventCallback> OutsideCallback;

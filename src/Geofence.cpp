@@ -17,8 +17,8 @@
 #include "Geofence.h"
 #include <math.h>
 
-#define D2R(x) ((x) * (0.01745329251994)) /*!< Degrees to radians */
-#define EARTH_RADIUS (6371.0) /*!< Earth radius in units of kilometers */
+
+constexpr double EARTH_RADIUS = 6371.0; /*!< Earth radius in units of kilometers */
 
 void Geofence::init() {
 
