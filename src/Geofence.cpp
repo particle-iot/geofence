@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#include "geofence.h"
-#include "system_error.h"
+#include "Geofence.h"
 #include <math.h>
 
 #define D2R(x) ((x) * (0.01745329251994)) /*!< Degrees to radians */
