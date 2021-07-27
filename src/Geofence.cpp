@@ -21,64 +21,75 @@
 constexpr double EARTH_RADIUS = 6371.0; /*!< Earth radius in units of kilometers */
 
 void Geofence::init() {
-
+    //clear out the previous geofence zone boundary states
+    for(auto&& iter : GeofenceZoneStates) {
+        iter.prev_event = GeofenceEventType::UNKNOWN;
+    }
 }
 
 void Geofence::loop() {
     if(new_point.test_and_set()) {
+        auto zone_index = 0;
         for(auto zone : GeofenceZones) {
             if(zone.enable) {
                 double distance;
+                auto zone_state = GeofenceZoneStates.at(zone_index);
+                CallbackContext context;
                 GpsDistance(zone.center_lat, 
                             zone.center_lon, 
                             _geofence_point.lat, 
                             _geofence_point.lon, 
                             distance);
+                //distance is outside geofence
                 if(distance > zone.radius) {
                     if(zone.event_type == GeofenceEventType::OUTSIDE) {
-                        for(auto callback : OutsideCallback) {
-                            callback();
-                        }
-                    }
-                    else if(zone.event_type == GeofenceEventType::INSIDE) {
-                        for(auto callback : InsideCallback) {
-                            callback();
-                        }
-                    }
-                    else if(zone.event_type == GeofenceEventType::ENTER) {
-                        for(auto callback : EnterCallback) {
-                            callback();
+                        context.event_type = GeofenceEventType::OUTSIDE;
+                        context.index = zone_index;
+                        for(auto callback : EventCallback) {
+                            callback(context);
                         }
                     }
                     else if(zone.event_type == GeofenceEventType::EXIT) {
-                        for(auto callback : ExitCallback) {
-                            callback();
+                        if(zone_state.prev_event == GeofenceEventType::INSIDE) {
+                            context.event_type = GeofenceEventType::EXIT;
+                            context.index = zone_index;
+                            for(auto callback : EventCallback) {
+                                callback(context);
+                            }
                         }
                     }
                 }
+                //distance is inside geofence
+                else {
+                    if(zone.event_type == GeofenceEventType::INSIDE) {
+                        context.event_type = GeofenceEventType::INSIDE;
+                        context.index = zone_index;
+                        for(auto callback : EventCallback) {
+                            callback(context);
+                        }
+                    }
+                    else if(zone.event_type == GeofenceEventType::ENTER) {
+                        if(zone_state.prev_event == 
+                            GeofenceEventType::OUTSIDE) {
+                            context.index = zone_index;
+                            context.event_type = GeofenceEventType::ENTER;
+                            for(auto callback : EventCallback) {
+                                callback(context);
+                            }
+                        }
+                    }
+                }
+                //Store the most recent executed event type for that zone
+                zone_state.prev_event = context.event_type;
             }
+            zone_index++;
         }
         new_point.clear();
     }
 }
 
-int Geofence::RegisterOutsideGeofence(GeofenceEventCallback callback) {
-    OutsideCallback.append(callback);
-    return SYSTEM_ERROR_NONE;
-}
-
-int Geofence::RegisterInsideGeofence(GeofenceEventCallback callback) {
-    InsideCallback.append(callback);
-    return SYSTEM_ERROR_NONE;
-}
-
-int Geofence::RegisterEnterGeofence(GeofenceEventCallback callback) {
-    EnterCallback.append(callback);
-    return SYSTEM_ERROR_NONE;
-}
-
-int Geofence::RegisterExitGeofence(GeofenceEventCallback callback) {
-    ExitCallback.append(callback);
+int Geofence::RegisterGeofenceCallback(GeofenceEventCallback callback) {
+    EventCallback.append(callback);
     return SYSTEM_ERROR_NONE;
 }
 
@@ -106,8 +117,8 @@ void Geofence::GpsDistance(double las,
     * a = sin(df / 2)^2 + cos(las) * cos(lae) * sin(dfi / 2)^2
     * d = RADIUS * 2 * atan(a / (1 - a)) * 1000 (for meters)
     */
-    a = (sin(df * 0.5) * sin(df * 0.5) + sin(dfi * 0.5) * sin(dfi * 0.5) * cos(las) * cos(lae));
-    d = (EARTH_RADIUS * 2.0 * atan2(sqrt(a), sqrt(1.0 - a)) * 1000.0);
+    a = (double)(sin(df * 0.5) * sin(df * 0.5) + sin(dfi * 0.5) * sin(dfi * 0.5) * cos(las) * cos(lae));
+    d = (double)(EARTH_RADIUS * 2.0 * atan2(sqrt(a), sqrt(1.0 - a)) * 1000.0);
 }
 
 
