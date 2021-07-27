@@ -44,7 +44,7 @@ struct PointData {
     double hdop; /**<horizontal dilution of prescion */
     time_t gps_time;
     bool operator!=(const PointData& other) const {
-        if((lat != other.lat) && (lon != other.lon)) {return true;}
+        if((lat != other.lat) || (lon != other.lon)) {return true;}
         else {return false;}
     }
 };
