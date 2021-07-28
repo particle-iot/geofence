@@ -58,6 +58,8 @@ void Geofence::loop() {
                             }
                         }
                     }
+                    //Store the most recent event type for that zone
+                    zone_state.prev_event = GeofenceEventType::OUTSIDE;
                 }
                 //distance is inside geofence
                 else {
@@ -78,9 +80,9 @@ void Geofence::loop() {
                             }
                         }
                     }
+                    //Store the most recent event type for that zone
+                    zone_state.prev_event = GeofenceEventType::INSIDE;
                 }
-                //Store the most recent executed event type for that zone
-                zone_state.prev_event = context.event_type;
             }
             zone_index++;
         }
