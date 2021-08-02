@@ -75,9 +75,10 @@ public:
     }
 
     /**
-     * @brief <enter a brief one sentence description>
+     * @brief Initilize the geofence interface
      *
-     * @details <details of the function>
+     * @details Sets the GeofenceZoneStates to GeofenceEventType::UNKNOWN in 
+     * order to be ready to capture ENTER and EXIT events
      */
     void init();
 
@@ -120,6 +121,15 @@ public:
     }
 
     /**
+     * @brief Is any geofence zone enabled
+     *
+     * @details Check all the geofence zones, and see if any are enabled
+     *
+     * @return true if any enabled, false if none enabled
+     */
+    bool AnyGeofenceEnabled();
+
+    /**
      * @brief Pass the point data to be used to calculate boundary. Only writes
      * if there is a change to the stored _geofence_point
      *
@@ -136,13 +146,16 @@ public:
     }
 
     /**
-     * @brief <enter a brief one sentence description>
+     * @brief Register a callback to occur for any geofence event
      *
-     * @details <details of the function>
+     * @details Registers a callback to be triggered when any geofence event.
+     * occurs. The callback will contain a context with the specific index and 
+     * event type that triggered the callback
      *
-     * @param[in] <name of variable> <description of variable>
+     * @param[in] callback function signature contain the context with the index
+     * and event type that triggered the callback
      *
-     * @return <what does the function return (optional if void)>
+     * @return SYSTEM_ERROR_NONE
      */
     int RegisterGeofenceCallback(GeofenceEventCallback callback);
 

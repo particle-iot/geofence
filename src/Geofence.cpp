@@ -90,6 +90,15 @@ void Geofence::loop() {
     }
 }
 
+bool Geofence::AnyGeofenceEnabled() {
+    for(auto iter : GeofenceZones) {
+        if(iter.enable) {
+            return true;
+        }
+    }
+    return false;
+}
+
 int Geofence::RegisterGeofenceCallback(GeofenceEventCallback callback) {
     EventCallback.append(callback);
     return SYSTEM_ERROR_NONE;
