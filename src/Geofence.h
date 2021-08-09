@@ -18,11 +18,16 @@
 #include "Particle.h"
 #include <atomic>
 
+//forward declaration of struct and enum class
+struct CallbackContext;
+enum class GeofenceEventType;
+
 /**
  * @brief Type definition of geofence event callback signature.
  *
  */
-using GeofenceEventCallback = std::function<void(void)>;
+using GeofenceEventCallback = 
+        std::function<void(CallbackContext& context)>;
 
 enum class GeofenceEventType {
     UNKNOWN,
@@ -35,8 +40,11 @@ enum class GeofenceEventType {
 struct PointData {
     double lat; /**< Point latitude in degrees */
     double lon; /**< Point longitude in degrees */
+    double horizontal_accuracy; /**< error value */
+    double hdop; /**<horizontal dilution of prescion */
+    time_t gps_time;
     bool operator!=(const PointData& other) const {
-        if((lat != other.lat) && (lon != other.lon)) {return true;}
+        if((lat != other.lat) || (lon != other.lon)) {return true;}
         else {return false;}
     }
 };
@@ -50,16 +58,27 @@ struct ZoneInfo {
     GeofenceEventType event_type{GeofenceEventType::UNKNOWN}; //type of event to trigger
 };
 
+struct CallbackContext {
+    int index; //index of zone (+1 to get the actual zone number)
+    GeofenceEventType event_type; //type of event that caused callback
+};
+
+struct GeofenceZoneState {
+    GeofenceEventType prev_event{GeofenceEventType::UNKNOWN};
+};
+
 class Geofence {
 public:
 
-    Geofence(int num_of_zones) : GeofenceZones(num_of_zones) {
+    Geofence(int num_of_zones) : GeofenceZones(num_of_zones), 
+            GeofenceZoneStates(num_of_zones) {
     }
 
     /**
-     * @brief <enter a brief one sentence description>
+     * @brief Initilize the geofence interface
      *
-     * @details <details of the function>
+     * @details Sets the GeofenceZoneStates to GeofenceEventType::UNKNOWN in 
+     * order to be ready to capture ENTER and EXIT events
      */
     void init();
 
@@ -102,7 +121,17 @@ public:
     }
 
     /**
-     * @brief Pass the point data to be used to calculate boundary
+     * @brief Is any geofence zone enabled
+     *
+     * @details Check all the geofence zones, and see if any are enabled
+     *
+     * @return true if any enabled, false if none enabled
+     */
+    bool AnyGeofenceEnabled();
+
+    /**
+     * @brief Pass the point data to be used to calculate boundary. Only writes
+     * if there is a change to the stored _geofence_point
      *
      * @details This function is called to pass point information that is
      * used in the tick() function to calculate geofence bounds
@@ -117,48 +146,18 @@ public:
     }
 
     /**
-     * @brief <enter a brief one sentence description>
+     * @brief Register a callback to occur for any geofence event
      *
-     * @details <details of the function>
+     * @details Registers a callback to be triggered when any geofence event.
+     * occurs. The callback will contain a context with the specific index and 
+     * event type that triggered the callback
      *
-     * @param[in] <name of variable> <description of variable>
+     * @param[in] callback function signature contain the context with the index
+     * and event type that triggered the callback
      *
-     * @return <what does the function return (optional if void)>
+     * @return SYSTEM_ERROR_NONE
      */
-    int RegisterOutsideGeofence(GeofenceEventCallback callback);
-
-    /**
-     * @brief <enter a brief one sentence description>
-     *
-     * @details <details of the function>
-     *
-     * @param[in] <name of variable> <description of variable>
-     *
-     * @return <what does the function return (optional if void)>
-     */
-    int RegisterInsideGeofence(GeofenceEventCallback callback);
-
-    /**
-     * @brief <enter a brief one sentence description>
-     *
-     * @details <details of the function>
-     *
-     * @param[in] <name of variable> <description of variable>
-     *
-     * @return <what does the function return (optional if void)>
-     */
-    int RegisterEnterGeofence(GeofenceEventCallback callback);
-
-    /**
-     * @brief <enter a brief one sentence description>
-     *
-     * @details <details of the function>
-     *
-     * @param[in] <name of variable> <description of variable>
-     *
-     * @return <what does the function return (optional if void)>
-     */
-    int RegisterExitGeofence(GeofenceEventCallback callback);
+    int RegisterGeofenceCallback(GeofenceEventCallback callback);
 
 private:
     /**
@@ -175,12 +174,20 @@ private:
                             double lae, 
                             double loe, 
                             double& d);
+    /**
+     * @brief Convert value from degrees to radians
+     *
+     * @details converts values from degrees to radians using a constant
+     *
+     * @param[in] x value in degrees
+     *
+     * @return value in radians
+     */
+    inline double D2R(double x) {return ((x) * (0.01745329251994));}
 
     Vector<ZoneInfo> GeofenceZones;
-    Vector<GeofenceEventCallback> OutsideCallback;
-    Vector<GeofenceEventCallback> InsideCallback;
-    Vector<GeofenceEventCallback> EnterCallback;
-    Vector<GeofenceEventCallback> ExitCallback;
+    Vector<GeofenceZoneState> GeofenceZoneStates;
+    Vector<GeofenceEventCallback> EventCallback;
 
     PointData _geofence_point;
     std::atomic_flag new_point = ATOMIC_FLAG_INIT;
