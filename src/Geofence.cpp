@@ -32,16 +32,14 @@ void Geofence::loop() {
         auto zone_index = 0;
         for(auto zone : GeofenceZones) {
             if(zone.enable) {
-                double distance;
+                bool outside_geofence = 
+                    (zone.shape_type == GeofenceShapeType::CIRCULAR) ? 
+                        IsCircularGeofenceOutside(zone) : 
+                            IsPolygonalGeofenceOutside(zone);
                 auto zone_state = GeofenceZoneStates.at(zone_index);
                 CallbackContext context;
-                GpsDistance(zone.center_lat, 
-                            zone.center_lon, 
-                            _geofence_point.lat, 
-                            _geofence_point.lon, 
-                            distance);
                 //distance is outside geofence
-                if(distance > zone.radius) {
+                if(outside_geofence) {
                     if(zone.event_type == GeofenceEventType::OUTSIDE) {
                         context.event_type = GeofenceEventType::OUTSIDE;
                         context.index = zone_index;
@@ -104,6 +102,60 @@ int Geofence::RegisterGeofenceCallback(GeofenceEventCallback callback) {
     return SYSTEM_ERROR_NONE;
 }
 
+bool Geofence::IsCircularGeofenceOutside(ZoneInfo& zone) {
+    double distance;
+    GpsDistance(zone.center_lat, zone.center_lon, _geofence_point.lat, 
+                _geofence_point.lon, distance);
+    //outside geofence
+    if(distance > zone.radius) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool Geofence::IsPolygonalGeofenceOutside(ZoneInfo& zone) {
+    if(IsPointInPolygon(zone.polygon_points, 
+                    _geofence_point.lat, 
+                    _geofence_point.lon)) {
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+int Geofence::HowManyPolygonPointsEnabled(Vector<PolygonPoint>& poly_points) {
+    int count = 0;
+
+    for(auto point : poly_points) {
+        if(point.enable) {count++;}
+    }
+
+    return count;
+}
+
+double Geofence::CalculateLonDatelineOffset(Vector<PolygonPoint>& poly_points) {
+    double offset = 0.0, min = poly_points.at(0).lon, 
+        max = poly_points.at(0).lon;
+
+    //find the min and max longitude
+    for(auto point : poly_points) {
+        if(point.enable) {
+            if(point.lon < min) {min = point.lon;}
+            if(point.lon > max) {max = point.lon;}
+        }
+    }
+
+    //is the longitude distance covered greater than 180 degrees
+    if(fabs((min-max)) > 180.0) {
+        offset = 360.0;
+    }
+
+    return offset;
+}
+
 void Geofence::GpsDistance(double las, 
                             double los, 
                             double lae, 
@@ -132,6 +184,50 @@ void Geofence::GpsDistance(double las,
     d = (double)(EARTH_RADIUS * 2.0 * atan2(sqrt(a), sqrt(1.0 - a)) * 1000.0);
 }
 
+bool Geofence::IsPointInPolygon(Vector<PolygonPoint>& poly_points, 
+                    double point_lat, 
+                    double point_lon) {
+    double offset;
+    int num_points_enabled = HowManyPolygonPointsEnabled(poly_points);
+    int i, j= num_points_enabled-1;
+    bool  odd_nodes = false;
+
+    offset = CalculateLonDatelineOffset(poly_points);
+    if(point_lon < 0.0) {point_lon += offset;}
+
+    if(num_points_enabled) {
+        //vector of only enabled polygon points
+        Vector<PolygonPoint> enabled_poly_points;
+        for(auto iter : poly_points) {
+            if(iter.enable) {enabled_poly_points.append(iter);}
+        }
+
+        for(i=0; i < num_points_enabled; i++) {
+            double point_i_lon = enabled_poly_points.at(i).lon;
+            double point_j_lon = enabled_poly_points.at(j).lon;
+
+            if(point_i_lon < 0.0) {point_i_lon += offset;}
+            if(point_j_lon < 0.0) {point_j_lon += offset;}
+
+            //is point latitude between polygon line segment
+            if((enabled_poly_points.at(i).lat < point_lat && 
+                enabled_poly_points.at(j).lat >= point_lat) || 
+                    (enabled_poly_points.at(j).lat < point_lat && 
+                        enabled_poly_points.at(i).lat >= point_lat)) {
+                //is point to the right of polygon line segment
+                //lonp > (lon1-lon2)*(latp-lat2)/(lat1-lat2)+lon2
+                if(point_lon > (point_j_lon+(point_i_lon-point_j_lon)*
+                        (point_lat-enabled_poly_points.at(j).lat)/
+                            (enabled_poly_points.at(i).lat-enabled_poly_points.at(j).lat))) {
+                    odd_nodes=!odd_nodes;
+                }
+            }
+            j=i;
+        }
+    }
+
+    return odd_nodes;
+}
 
 
 
