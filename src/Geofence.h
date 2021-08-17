@@ -29,6 +29,12 @@ enum class GeofenceEventType;
 using GeofenceEventCallback = 
         std::function<void(CallbackContext& context)>;
 
+/**
+ * @brief Max number of polygon points that can be used
+ *
+ */
+constexpr int NUM_OF_POLYGON_POINTS = 10;
+
 enum class GeofenceEventType {
     UNKNOWN,
     INSIDE,
@@ -49,13 +55,27 @@ struct PointData {
     }
 };
 
+struct PolygonPoint {
+    double lat{0.0};
+    double lon{0.0};
+    bool enable{false};
+};
+
+enum class GeofenceShapeType {
+    CIRCULAR,
+    POLYGONAL,
+};
+
 struct ZoneInfo {
     double radius{0.0}; //radius in meters that define the geofence zone boundary
     double center_lat{0.0};                 /**< Center point latitude in degrees */
     double center_lon{0.0};                /**< Center point longitude in degrees */
+    Vector<PolygonPoint>polygon_points{Vector<PolygonPoint>(NUM_OF_POLYGON_POINTS)};
+    //PolygonPoint polygon_points[NUM_OF_POLYGON_POINTS] = {0};
     uint8_t confidence_number{0}; //a number to reduce false positives
     bool enable{false}; //enable or disable the geofence zone
     GeofenceEventType event_type{GeofenceEventType::UNKNOWN}; //type of event to trigger
+    GeofenceShapeType shape_type{GeofenceShapeType::CIRCULAR};
 };
 
 struct CallbackContext {
@@ -71,7 +91,7 @@ class Geofence {
 public:
 
     Geofence(int num_of_zones) : GeofenceZones(num_of_zones), 
-            GeofenceZoneStates(num_of_zones) {
+        GeofenceZoneStates(num_of_zones) {
     }
 
     /**
@@ -160,6 +180,84 @@ public:
     int RegisterGeofenceCallback(GeofenceEventCallback callback);
 
 private:
+
+    /**
+     * @brief Checks if the circular geofence is outside the circle boundary
+     *
+     * @details Calculates the distance from the center of the boundary to the
+     * given point and compares it to the radius of the circle. If distance 
+     * greater than the radius, it is outside the boundary. If smaller inside
+     * the boundary
+     *
+     * @param[in] zone struct containing the zone information
+     *
+     * @return true if outside boundary, false if not
+     */
+    bool IsCircularGeofenceOutside(ZoneInfo& zone);
+
+    /**
+     * @brief Checks to see if polygonal geofence is outside the polygon 
+     * boundary
+     *
+     * @details Calls IsPointInPolygon() and if it returns true the point is 
+     * inside the boundary. If it returns false the point is outside the 
+     * boundary
+     *
+     * @param[in] zone struct containg the zone info
+     *
+     * @return true if outside the boundary, false if not
+     */
+    bool IsPolygonalGeofenceOutside(ZoneInfo& zone);
+
+    /**
+     * @brief Uses the even-odd rule using the ray casting method from a point
+     * to see if it is inside of the polygon. Accounts for the polygon crossing
+     * the internation date line. However does not account for a polygon
+     * region that covers the north and/or south poles
+     *
+     * @details Checks if sequential polygon vertices are in the same plane as
+     * a given point. If so we figure out if the segment line of two of the 
+     * vertices is to the right of the given point. We then flip the odd_nodes flag
+     * If there are an odd number of nodes it is inside the polygon. If there
+     * are an even number of nodes it is outside
+     *
+     * @param[in] poly_point vector containing the vertices of the polygon
+     * @param[in] point_lat latitude of the given point
+     * @param[in] point_lon longitude of the given point
+     *
+     * @return true if inside the polygon, false if outside the polygon
+     */
+    bool IsPointInPolygon(Vector<PolygonPoint>& poly_point, 
+                    double point_lat, 
+                    double point_lon);
+
+    /**
+     * @brief Check to see how many Polygon Points are enabled
+     *
+     * @details Checks the polygon points vector and counts the number of
+     * enabled points
+     *
+     * @param[in] poly_points vector containg the vertices of the polygon
+     *
+     * @return number of enabled points
+     */
+    int HowManyPolygonPointsEnabled(Vector<PolygonPoint>& poly_points);
+
+    /**
+     * @brief If the polygon crosses the internation date line you must
+     * add 360 degrees to all longitude points. This returns an offset of 360
+     *
+     * @details This calculates the distance covered by min longitude, and max
+     * longitude of all the poly_points. The absolute value of the difference
+     * abs(min_lon-max_lon) is compared to 180. If geater than 180 the polygon
+     * has to have crossed the international dateline.
+     *
+     * @param[in,out] poly_points vector containing the vertices of the polygon
+     *
+     * @return 360 if crosses the international date line, or 0 if not
+     */
+    double CalculateLonDatelineOffset(Vector<PolygonPoint>& poly_points);
+
     /**
      * \brief           Calculate distance and bearing between `2` latitude and longitude coordinates
      * \param[in]       las: Latitude start coordinate, in units of degrees
