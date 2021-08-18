@@ -28,26 +28,26 @@ void Geofence::init() {
 }
 
 void Geofence::loop() {
-    if(new_point.test_and_set()) {
-        auto zone_index = 0;
-        for(auto zone : GeofenceZones) {
-            if(zone.enable) {
-                bool outside_geofence = 
-                    (zone.shape_type == GeofenceShapeType::CIRCULAR) ? 
-                        IsCircularGeofenceOutside(zone) : 
-                            IsPolygonalGeofenceOutside(zone);
-                auto zone_state = GeofenceZoneStates.at(zone_index);
-                CallbackContext context;
+    auto zone_index = 0;
+    for(auto zone : GeofenceZones) {
+        if(zone.enable) {
+            bool outside_geofence = 
+                (zone.shape_type == GeofenceShapeType::CIRCULAR) ? 
+                    IsCircularGeofenceOutside(zone) : 
+                        IsPolygonalGeofenceOutside(zone);
+            auto zone_state = GeofenceZoneStates.at(zone_index);
+            CallbackContext context; 
+            if(IsEventTriggered(outside_geofence, zone, zone_index)) {
                 //distance is outside geofence
                 if(outside_geofence) {
-                    if(zone.event_type == GeofenceEventType::OUTSIDE) {
+                    if(zone.outside_event) {
                         context.event_type = GeofenceEventType::OUTSIDE;
                         context.index = zone_index;
                         for(auto callback : EventCallback) {
                             callback(context);
                         }
                     }
-                    else if(zone.event_type == GeofenceEventType::EXIT) {
+                    if(zone.exit_event) {
                         if(zone_state.prev_event == GeofenceEventType::INSIDE) {
                             context.event_type = GeofenceEventType::EXIT;
                             context.index = zone_index;
@@ -57,18 +57,19 @@ void Geofence::loop() {
                         }
                     }
                     //Store the most recent event type for that zone
-                    GeofenceZoneStates.at(zone_index).prev_event = GeofenceEventType::OUTSIDE;
+                    GeofenceZoneStates.at(zone_index).prev_event = 
+                                                GeofenceEventType::OUTSIDE;
                 }
                 //distance is inside geofence
                 else {
-                    if(zone.event_type == GeofenceEventType::INSIDE) {
+                    if(zone.inside_event) {
                         context.event_type = GeofenceEventType::INSIDE;
                         context.index = zone_index;
                         for(auto callback : EventCallback) {
                             callback(context);
                         }
                     }
-                    else if(zone.event_type == GeofenceEventType::ENTER) {
+                    if(zone.enter_event) {
                         if(zone_state.prev_event == 
                             GeofenceEventType::OUTSIDE) {
                             context.index = zone_index;
@@ -79,12 +80,12 @@ void Geofence::loop() {
                         }
                     }
                     //Store the most recent event type for that zone
-                    GeofenceZoneStates.at(zone_index).prev_event = GeofenceEventType::INSIDE;
+                    GeofenceZoneStates.at(zone_index).prev_event = 
+                                                GeofenceEventType::INSIDE;
                 }
             }
-            zone_index++;
         }
-        new_point.clear();
+        zone_index++;
     }
 }
 
@@ -124,6 +125,26 @@ bool Geofence::IsPolygonalGeofenceOutside(ZoneInfo& zone) {
     else {
         return true;
     }
+}
+
+bool Geofence::IsEventTriggered(bool outside_geofence, 
+                        ZoneInfo& zone, 
+                        int zone_index) {
+    bool returnval = false;
+    bool stable = 
+        ((outside_geofence && GeofenceZoneStates.at(zone_index).pending_event == GeofenceEventType::OUTSIDE) || 
+            (!outside_geofence && GeofenceZoneStates.at(zone_index).pending_event == GeofenceEventType::INSIDE)) ||
+                (!zone.verification_time_sec);
+    if(!GeofenceZoneStates.at(zone_index).pending_time_ms || !stable) {
+        GeofenceZoneStates.at(zone_index).pending_event = (outside_geofence)? 
+                    GeofenceEventType::OUTSIDE : GeofenceEventType::INSIDE;
+        GeofenceZoneStates.at(zone_index).pending_time_ms = System.millis();
+    }
+    if(System.millis() - GeofenceZoneStates.at(zone_index).pending_time_ms >= 
+            zone.verification_time_sec*1000 && stable) {
+        returnval = true;
+    }
+    return returnval;
 }
 
 int Geofence::HowManyPolygonPointsEnabled(Vector<PolygonPoint>& poly_points) {
