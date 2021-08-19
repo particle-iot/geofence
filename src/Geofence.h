@@ -74,7 +74,11 @@ struct ZoneInfo {
     //PolygonPoint polygon_points[NUM_OF_POLYGON_POINTS] = {0};
     uint8_t confidence_number{0}; //a number to reduce false positives
     bool enable{false}; //enable or disable the geofence zone
-    GeofenceEventType event_type{GeofenceEventType::UNKNOWN}; //type of event to trigger
+    bool inside_event{false};
+    bool outside_event{false};
+    bool enter_event{false};
+    bool exit_event{false};
+    uint32_t verification_time_sec{0};
     GeofenceShapeType shape_type{GeofenceShapeType::CIRCULAR};
 };
 
@@ -85,6 +89,8 @@ struct CallbackContext {
 
 struct GeofenceZoneState {
     GeofenceEventType prev_event{GeofenceEventType::UNKNOWN};
+    GeofenceEventType pending_event{GeofenceEventType::UNKNOWN};
+    uint64_t pending_time_ms{0};
 };
 
 class Geofence {
@@ -159,10 +165,7 @@ public:
      * @param[in] PointData point to be passed for calculation
      */
     void UpdateGeofencePoint(const PointData& point) {
-        if(_geofence_point != point) {
-            _geofence_point = point;
-            new_point.test_and_set();
-        }
+        _geofence_point = point;
     }
 
     /**
@@ -244,6 +247,26 @@ private:
     int HowManyPolygonPointsEnabled(Vector<PolygonPoint>& poly_points);
 
     /**
+     * @brief Check if the zone has passed the verification_sec threshold to 
+     * trigger an event
+     *
+     * @details Checks the GeofenceZoneState using the given zone_index to see
+     * if the pending event is stable and the pending time has exceeded the
+     * verification_sec. If not reset the pending event to the current state 
+     * (inside or outside) for the next call to this function to evaluate again
+     *
+     * @param[in] outside_geofence currently inside or outside the geofence
+     * @param[in] zone the given zone info we want to process
+     * @param[in] zone_index the given zone index to be used to look up the 
+     * correct GeofenceZoneState.
+     *
+     * @return true if triggered, false if not
+     */
+    bool IsEventTriggered(bool outside_geofence, 
+                        ZoneInfo& zone, 
+                        int zone_index);
+
+    /**
      * @brief If the polygon crosses the internation date line you must
      * add 360 degrees to all longitude points. This returns an offset of 360
      *
@@ -288,5 +311,4 @@ private:
     Vector<GeofenceEventCallback> EventCallback;
 
     PointData _geofence_point;
-    std::atomic_flag new_point = ATOMIC_FLAG_INIT;
 };

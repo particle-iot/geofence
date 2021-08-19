@@ -59,7 +59,11 @@ TEST_CASE("Check Defaults Test") {
     REQUIRE(zone0.center_lon == 0.0);
     REQUIRE(zone0.confidence_number == 0);
     REQUIRE(zone0.enable == false);
-    REQUIRE(zone0.event_type == GeofenceEventType::UNKNOWN);
+    REQUIRE(zone0.enter_event == false);
+    REQUIRE(zone0.exit_event == false);
+    REQUIRE(zone0.inside_event == false);
+    REQUIRE(zone0.outside_event == false);
+    REQUIRE(zone0.verification_time_sec == 0);
 
     auto zone1 = test.GetZoneInfo(1);
     REQUIRE(zone1.radius == 0.0);
@@ -67,7 +71,11 @@ TEST_CASE("Check Defaults Test") {
     REQUIRE(zone1.center_lon == 0.0);
     REQUIRE(zone1.confidence_number == 0);
     REQUIRE(zone1.enable == false);
-    REQUIRE(zone1.event_type == GeofenceEventType::UNKNOWN);
+    REQUIRE(zone1.enter_event == false);
+    REQUIRE(zone1.exit_event == false);
+    REQUIRE(zone1.inside_event == false);
+    REQUIRE(zone1.outside_event == false);
+    REQUIRE(zone1.verification_time_sec == 0);
 
     auto zone2 = test.GetZoneInfo(2);
     REQUIRE(zone2.radius == 0.0);
@@ -75,7 +83,11 @@ TEST_CASE("Check Defaults Test") {
     REQUIRE(zone2.center_lon == 0.0);
     REQUIRE(zone2.confidence_number == 0);
     REQUIRE(zone2.enable == false);
-    REQUIRE(zone2.event_type == GeofenceEventType::UNKNOWN);
+    REQUIRE(zone2.enter_event == false);
+    REQUIRE(zone2.exit_event == false);
+    REQUIRE(zone2.inside_event == false);
+    REQUIRE(zone2.outside_event == false);
+    REQUIRE(zone2.verification_time_sec == 0);
 
     auto zone3 = test.GetZoneInfo(3);
     REQUIRE(zone3.radius == 0.0);
@@ -83,7 +95,11 @@ TEST_CASE("Check Defaults Test") {
     REQUIRE(zone3.center_lon == 0.0);
     REQUIRE(zone3.confidence_number == 0);
     REQUIRE(zone3.enable == false);
-    REQUIRE(zone3.event_type == GeofenceEventType::UNKNOWN);
+    REQUIRE(zone3.enter_event == false);
+    REQUIRE(zone3.exit_event == false);
+    REQUIRE(zone3.inside_event == false);
+    REQUIRE(zone3.outside_event == false);
+    REQUIRE(zone3.verification_time_sec == 0);
 }
 
 TEST_CASE("Disabled Test") {
@@ -128,71 +144,25 @@ TEST_CASE("Disabled Test") {
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 }
 
-TEST_CASE("Enabled Test, UNKOWN EVENT TYPE") {
-    Geofence test(4);
-    test.init();
-
-    test.SetZoneInfo(0, GoldenGatePark);
-    test.GetZoneInfo(0).enable = true;
-    test.SetZoneInfo(1, PoloField);
-    test.GetZoneInfo(1).enable = true;
-    test.SetZoneInfo(2, EquitationField);
-    test.GetZoneInfo(2).enable = true;
-    test.SetZoneInfo(3, StrawberryHill);
-    test.GetZoneInfo(3).enable = true;
-
-    REQUIRE(test.RegisterGeofenceCallback(geofenceCallback) == SYSTEM_ERROR_NONE);
-
-    test.loop();
-    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
-
-    test.loop();
-    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
-
-    test.UpdateGeofencePoint(TestPoints[0]);
-    test.loop();
-    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
-
-    test.UpdateGeofencePoint(TestPoints[1]);
-    test.loop();
-    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
-
-    test.UpdateGeofencePoint(TestPoints[2]);
-    test.loop();
-    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
-
-    test.UpdateGeofencePoint(TestPoints[3]);
-    test.loop();
-    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
-
-    test.UpdateGeofencePoint(TestPoints[4]);
-    test.loop();
-    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
-
-    test.UpdateGeofencePoint(TestPoints[5]);
-    test.loop();
-    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
-}
-
 TEST_CASE("Circular Outside Event Test") {
     Geofence test(4);
     test.init();
 
     test.SetZoneInfo(0, GoldenGatePark);
     test.GetZoneInfo(0).enable = true;
-    test.GetZoneInfo(0).event_type = GeofenceEventType::OUTSIDE;
+    test.GetZoneInfo(0).outside_event = true;
     test.GetZoneInfo(0).shape_type = GeofenceShapeType::CIRCULAR;
     test.SetZoneInfo(1, PoloField);
     test.GetZoneInfo(1).enable = true;
-    test.GetZoneInfo(1).event_type = GeofenceEventType::OUTSIDE;
+    test.GetZoneInfo(1).outside_event = true;
     test.GetZoneInfo(1).shape_type = GeofenceShapeType::CIRCULAR;
     test.SetZoneInfo(2, EquitationField);
     test.GetZoneInfo(2).enable = true;
-    test.GetZoneInfo(2).event_type = GeofenceEventType::OUTSIDE;
+    test.GetZoneInfo(2).outside_event = true;
     test.GetZoneInfo(2).shape_type = GeofenceShapeType::CIRCULAR;
     test.SetZoneInfo(3, StrawberryHill);
     test.GetZoneInfo(3).enable = true;
-    test.GetZoneInfo(3).event_type = GeofenceEventType::OUTSIDE;
+    test.GetZoneInfo(3).outside_event = true;
     test.GetZoneInfo(3).shape_type = GeofenceShapeType::CIRCULAR;
 
     REQUIRE(test.RegisterGeofenceCallback(geofenceCallback) == SYSTEM_ERROR_NONE);
@@ -223,19 +193,19 @@ TEST_CASE("Circular Inside Event Test") {
     test.GetZoneInfo(0).radius = 2700.0;
     test.GetZoneInfo(0).center_lat = 37.76887;
     test.GetZoneInfo(0).center_lon = -122.48248;
-    test.GetZoneInfo(0).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(0).inside_event = true;
     test.GetZoneInfo(0).shape_type = GeofenceShapeType::CIRCULAR;
     test.SetZoneInfo(1, PoloField);
     test.GetZoneInfo(1).enable = true;
-    test.GetZoneInfo(1).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(1).inside_event = true;
     test.GetZoneInfo(1).shape_type = GeofenceShapeType::CIRCULAR;
     test.SetZoneInfo(2, EquitationField);
     test.GetZoneInfo(2).enable = true;
-    test.GetZoneInfo(2).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(2).inside_event = true;
     test.GetZoneInfo(2).shape_type = GeofenceShapeType::CIRCULAR;
     test.SetZoneInfo(3, StrawberryHill);
     test.GetZoneInfo(3).enable = true;
-    test.GetZoneInfo(3).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(3).inside_event = true;
     test.GetZoneInfo(3).shape_type = GeofenceShapeType::CIRCULAR;
 
     REQUIRE(test.RegisterGeofenceCallback(geofenceCallback) == SYSTEM_ERROR_NONE);
@@ -258,19 +228,19 @@ TEST_CASE("Circular Enter Event Test") {
     test.GetZoneInfo(0).radius = 2700.0;
     test.GetZoneInfo(0).center_lat = 37.76887;
     test.GetZoneInfo(0).center_lon = -122.48248;
-    test.GetZoneInfo(0).event_type = GeofenceEventType::ENTER;
+    test.GetZoneInfo(0).enter_event = true;
     test.GetZoneInfo(0).shape_type = GeofenceShapeType::CIRCULAR;
     test.SetZoneInfo(1, PoloField);
     test.GetZoneInfo(1).enable = true;
-    test.GetZoneInfo(1).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(1).inside_event = true;
     test.GetZoneInfo(1).shape_type = GeofenceShapeType::CIRCULAR;
     test.SetZoneInfo(2, EquitationField);
     test.GetZoneInfo(2).enable = true;
-    test.GetZoneInfo(2).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(2).inside_event = true;
     test.GetZoneInfo(2).shape_type = GeofenceShapeType::CIRCULAR;
     test.SetZoneInfo(3, StrawberryHill);
     test.GetZoneInfo(3).enable = true;
-    test.GetZoneInfo(3).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(3).inside_event = true;
     test.GetZoneInfo(3).shape_type = GeofenceShapeType::CIRCULAR;
 
     REQUIRE(test.RegisterGeofenceCallback(geofenceCallback) == SYSTEM_ERROR_NONE);
@@ -305,19 +275,19 @@ TEST_CASE("Circular Exit Event Test") {
     test.GetZoneInfo(0).radius = 2700.0;
     test.GetZoneInfo(0).center_lat = 37.76887;
     test.GetZoneInfo(0).center_lon = -122.48248;
-    test.GetZoneInfo(0).event_type = GeofenceEventType::EXIT;
+    test.GetZoneInfo(0).exit_event = true;
     test.GetZoneInfo(0).shape_type = GeofenceShapeType::CIRCULAR;
     test.SetZoneInfo(1, PoloField);
     test.GetZoneInfo(1).enable = true;
-    test.GetZoneInfo(1).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(1).inside_event = true;
     test.GetZoneInfo(1).shape_type = GeofenceShapeType::CIRCULAR;
     test.SetZoneInfo(2, EquitationField);
     test.GetZoneInfo(2).enable = true;
-    test.GetZoneInfo(2).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(2).inside_event = true;
     test.GetZoneInfo(2).shape_type = GeofenceShapeType::CIRCULAR;
     test.SetZoneInfo(3, StrawberryHill);
     test.GetZoneInfo(3).enable = true;
-    test.GetZoneInfo(3).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(3).inside_event = true;
     test.GetZoneInfo(3).shape_type = GeofenceShapeType::CIRCULAR;
 
     REQUIRE(test.RegisterGeofenceCallback(geofenceCallback) == SYSTEM_ERROR_NONE);
@@ -344,6 +314,139 @@ TEST_CASE("Circular Exit Event Test") {
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 1); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 }
 
+TEST_CASE("Multiple Circular Zone Events Test") {
+    Geofence test(4);
+    test.init();
+
+    test.SetZoneInfo(0, GoldenGatePark);
+    test.GetZoneInfo(0).enable = true;
+    test.GetZoneInfo(0).radius = 2700.0;
+    test.GetZoneInfo(0).center_lat = 37.76887;
+    test.GetZoneInfo(0).center_lon = -122.48248;
+    test.GetZoneInfo(0).enter_event = true;
+    test.GetZoneInfo(0).exit_event = true;
+    test.GetZoneInfo(0).inside_event = true;
+    test.GetZoneInfo(0).outside_event = true;
+    test.GetZoneInfo(0).shape_type = GeofenceShapeType::CIRCULAR;
+
+    REQUIRE(test.RegisterGeofenceCallback(geofenceCallback) == SYSTEM_ERROR_NONE);
+
+    test.UpdateGeofencePoint(TestPoints[6]); //inside the zone
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
+
+    test.UpdateGeofencePoint(TestPoints[0]); //outside the zone
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 1); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
+
+    //outside the zone
+    test.UpdateGeofencePoint(TestPoints[1]);
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
+
+    test.UpdateGeofencePoint(TestPoints[6]); //inside the zone
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 1); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
+
+    test.UpdateGeofencePoint(TestPoints[0]); //outside the zone
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 1); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
+}
+
+TEST_CASE("Verification Time Circular Zone Events Test") {
+    Geofence test(4);
+    test.init();
+
+    test.SetZoneInfo(0, GoldenGatePark);
+    test.GetZoneInfo(0).enable = true;
+    test.GetZoneInfo(0).radius = 2700.0;
+    test.GetZoneInfo(0).center_lat = 37.76887;
+    test.GetZoneInfo(0).center_lon = -122.48248;
+    test.GetZoneInfo(0).enter_event = true;
+    test.GetZoneInfo(0).exit_event = true;
+    test.GetZoneInfo(0).inside_event = true;
+    test.GetZoneInfo(0).outside_event = true;
+    test.GetZoneInfo(0).shape_type = GeofenceShapeType::CIRCULAR;
+    test.GetZoneInfo(0).verification_time_sec = 3; //3 seconds
+
+    REQUIRE(test.RegisterGeofenceCallback(geofenceCallback) == SYSTEM_ERROR_NONE);
+
+    //outside the zone
+    test.UpdateGeofencePoint(TestPoints[0]);
+    test.loop();
+
+    //outside the zone
+    System.inc(2000);
+    test.UpdateGeofencePoint(TestPoints[1]);
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
+
+    //outside the zone
+    System.inc(3000);
+    test.UpdateGeofencePoint(TestPoints[1]);
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
+
+    //outside the zone
+    System.inc(1000);
+    test.UpdateGeofencePoint(TestPoints[0]);
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
+
+    //inside the zone
+    test.UpdateGeofencePoint(TestPoints[6]);
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
+
+    //inside the zone
+    System.inc(2000);
+    test.UpdateGeofencePoint(TestPoints[6]);
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
+
+     //inside the zone
+    System.inc(3000);
+    test.UpdateGeofencePoint(TestPoints[6]);
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 1); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
+
+    //inside the zone
+    System.inc(1000);
+    test.UpdateGeofencePoint(TestPoints[6]);
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
+
+    //outside the zone
+    System.inc(3000);
+    test.UpdateGeofencePoint(TestPoints[1]); 
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
+
+    //outside the zone
+    System.inc(1000);
+    test.UpdateGeofencePoint(TestPoints[0]); 
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
+
+    //outside the zone
+    System.inc(2000);
+    test.UpdateGeofencePoint(TestPoints[0]); 
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 1); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
+
+    //outside the zone
+    System.inc(1000);
+    test.UpdateGeofencePoint(TestPoints[0]); 
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
+
+    //outside the zone
+    System.inc(2000);
+    test.UpdateGeofencePoint(TestPoints[0]); 
+    test.loop();
+    REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
+}
+
 TEST_CASE("Polygonal Inside Event Test") {
 
     Vector<PolygonPoint> gg_park_polygon{{37.771531,-122.511040,true},
@@ -358,7 +461,7 @@ TEST_CASE("Polygonal Inside Event Test") {
     test.GetZoneInfo(0).center_lat = 0.0;
     test.GetZoneInfo(0).center_lon = 0.0;
     test.GetZoneInfo(0).polygon_points = gg_park_polygon;
-    test.GetZoneInfo(0).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(0).inside_event = true;
     test.GetZoneInfo(0).shape_type = GeofenceShapeType::POLYGONAL;
 
     REQUIRE(test.RegisterGeofenceCallback(geofenceCallback) == SYSTEM_ERROR_NONE);
@@ -394,7 +497,7 @@ TEST_CASE("International Dateline Polygonal Inside Event Test") {
     test.GetZoneInfo(0).center_lat = 0.0;
     test.GetZoneInfo(0).center_lon = 0.0;
     test.GetZoneInfo(0).polygon_points = int_dateline_polygon;
-    test.GetZoneInfo(0).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(0).inside_event = true;
     test.GetZoneInfo(0).shape_type = GeofenceShapeType::POLYGONAL;
 
     REQUIRE(test.RegisterGeofenceCallback(geofenceCallback) == SYSTEM_ERROR_NONE);
@@ -430,7 +533,7 @@ TEST_CASE("Southern hemisphere Polygonal Inside Event Test") {
     test.GetZoneInfo(0).center_lat = 0.0;
     test.GetZoneInfo(0).center_lon = 0.0;
     test.GetZoneInfo(0).polygon_points = south_hemi_polygon;
-    test.GetZoneInfo(0).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(0).inside_event = true;
     test.GetZoneInfo(0).shape_type = GeofenceShapeType::POLYGONAL;
 
     REQUIRE(test.RegisterGeofenceCallback(geofenceCallback) == SYSTEM_ERROR_NONE);
@@ -452,7 +555,7 @@ TEST_CASE("Southern hemisphere Polygonal Inside Event Test") {
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 }
 
-TEST_CASE("Equator Crossing Polygon Inside Event Test") {
+TEST_CASE("Brazil Equator Crossing Polygon Inside Event Test") {
 
     Vector<PolygonPoint> south_hemi_polygon{{-2.992267,-60.130649,true},
         {-3.152658,-60.124700,true},{-3.155628,-59.919461,true},
@@ -466,7 +569,7 @@ TEST_CASE("Equator Crossing Polygon Inside Event Test") {
     test.GetZoneInfo(0).center_lat = 0.0;
     test.GetZoneInfo(0).center_lon = 0.0;
     test.GetZoneInfo(0).polygon_points = south_hemi_polygon;
-    test.GetZoneInfo(0).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(0).inside_event = true;
     test.GetZoneInfo(0).shape_type = GeofenceShapeType::POLYGONAL;
 
     REQUIRE(test.RegisterGeofenceCallback(geofenceCallback) == SYSTEM_ERROR_NONE);
@@ -501,7 +604,7 @@ TEST_CASE("Disabled Point Polygon Inside Event Test") {
     test.GetZoneInfo(0).center_lat = 0.0;
     test.GetZoneInfo(0).center_lon = 0.0;
     test.GetZoneInfo(0).polygon_points = qauadrilateral;
-    test.GetZoneInfo(0).event_type = GeofenceEventType::INSIDE;
+    test.GetZoneInfo(0).inside_event = true;
     test.GetZoneInfo(0).shape_type = GeofenceShapeType::POLYGONAL;
 
     REQUIRE(test.RegisterGeofenceCallback(geofenceCallback) == SYSTEM_ERROR_NONE);
@@ -512,7 +615,7 @@ TEST_CASE("Disabled Point Polygon Inside Event Test") {
 
     //makes a triangle now, which puts the point to the outside of geofence
     test.GetZoneInfo(0).polygon_points.at(2).enable = false;
-    test.GetZoneInfo(0).event_type = GeofenceEventType::OUTSIDE;
+    test.GetZoneInfo(0).outside_event = true;
 
     test.UpdateGeofencePoint(TestPoints[9]); //outside the zone now since removed the point
     test.loop();

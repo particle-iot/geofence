@@ -29,4 +29,4 @@ include_directories(src/ test/)
 #add_subdirectory(test)
 #include(test)
 
-add_executable(geofence-test test/test.cpp src/Geofence.cpp)
+add_executable(geofence-test test/test.cpp src/Geofence.cpp test/Particle.cpp)
