@@ -10,6 +10,7 @@ ZoneInfo PoloField;
 ZoneInfo EquitationField;
 ZoneInfo StrawberryHill;
 ZoneInfo InternationalDateline;
+ZoneInfo PacificEquator;
 ZoneInfo BrazilArea;
 ZoneInfo TwinPeaksArea;
 
@@ -24,6 +25,7 @@ constexpr PointData TestPoints[] = {
     { 6.721186, -179.28955, 0.0, 0.0, 0 },   // Near dateline in Pacific
     { -3.072765, -59.99389, 0.0, 0.0, 0 },   // Manuas Brazil
     { 37.75402, -122.44960, 0.0, 0.0, 0 },   // USPS Mailbox Twin Peaks
+    { -0.440480, -64.598314, 0.0, 0.0, 0 },  // Papera Brazil
 };
 
 std::atomic<int> enterCount(0);
@@ -557,9 +559,9 @@ TEST_CASE("Southern hemisphere Polygonal Inside Event Test") {
 
 TEST_CASE("Brazil Equator Crossing Polygon Inside Event Test") {
 
-    Vector<PolygonPoint> south_hemi_polygon{{-2.992267,-60.130649,true},
-        {-3.152658,-60.124700,true},{-3.155628,-59.919461,true},
-        {-3.027912,-59.901614,true}};
+    Vector<PolygonPoint> south_hemi_polygon{{0.287359,-65.374218,true},
+        {-0.762855,-65.382897,true},{-0.635478,-64.320909,true},
+        {0.265387,-64.307176,true}};
     Geofence test(4);
     test.init();
 
@@ -586,7 +588,7 @@ TEST_CASE("Brazil Equator Crossing Polygon Inside Event Test") {
     test.loop();
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
-    test.UpdateGeofencePoint(TestPoints[8]); //inside the zone
+    test.UpdateGeofencePoint(TestPoints[10]); //inside the zone
     test.loop();
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 }
