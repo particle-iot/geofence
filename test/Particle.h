@@ -43,26 +43,26 @@ using namespace spark;
 
 class SystemClass {
 public:
-	SystemClass() : _tick(0) {}
+    SystemClass() : _tick(0) {}
 
-	system_tick_t Uptime() const {
-		return (system_tick_t)_tick;
-	}
+    system_tick_t Uptime() const {
+        return (system_tick_t)_tick;
+    }
 
-	unsigned uptime() const {
-		return _tick / 1000;
-	}
+    unsigned uptime() const {
+        return _tick / 1000;
+    }
 
-	uint64_t millis() const {
-		return _tick;
-	}
+    uint64_t millis() const {
+        return _tick;
+    }
 
-	void inc(int i = 1) {
-		_tick += i;
-	}
+    void inc(int i = 1) {
+        _tick += i;
+    }
 
 private:
-	uint64_t _tick;
+    uint64_t _tick;
 };
 
 extern SystemClass System;

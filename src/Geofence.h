@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Particle Industries, Inc.
+ * Copyright (c) 2022 Particle Industries, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,9 +77,7 @@ struct ZoneInfo {
     double radius{0.0}; //radius in meters that define the geofence zone boundary
     double center_lat{0.0};                 /**< Center point latitude in degrees */
     double center_lon{0.0};                /**< Center point longitude in degrees */
-    Vector<PolygonPoint>polygon_points{Vector<PolygonPoint>(NUM_OF_POLYGON_POINTS)};
-    //PolygonPoint polygon_points[NUM_OF_POLYGON_POINTS] = {0};
-    uint8_t confidence_number{0}; //a number to reduce false positives
+    Vector<PolygonPoint> polygon_points;
     bool enable{false}; //enable or disable the geofence zone
     bool inside_event{false};
     bool outside_event{false};

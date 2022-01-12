@@ -59,7 +59,6 @@ TEST_CASE("Check Defaults Test") {
     REQUIRE(zone0.radius == 0.0);
     REQUIRE(zone0.center_lat == 0.0);
     REQUIRE(zone0.center_lon == 0.0);
-    REQUIRE(zone0.confidence_number == 0);
     REQUIRE(zone0.enable == false);
     REQUIRE(zone0.enter_event == false);
     REQUIRE(zone0.exit_event == false);
@@ -71,7 +70,6 @@ TEST_CASE("Check Defaults Test") {
     REQUIRE(zone1.radius == 0.0);
     REQUIRE(zone1.center_lat == 0.0);
     REQUIRE(zone1.center_lon == 0.0);
-    REQUIRE(zone1.confidence_number == 0);
     REQUIRE(zone1.enable == false);
     REQUIRE(zone1.enter_event == false);
     REQUIRE(zone1.exit_event == false);
@@ -83,7 +81,6 @@ TEST_CASE("Check Defaults Test") {
     REQUIRE(zone2.radius == 0.0);
     REQUIRE(zone2.center_lat == 0.0);
     REQUIRE(zone2.center_lon == 0.0);
-    REQUIRE(zone2.confidence_number == 0);
     REQUIRE(zone2.enable == false);
     REQUIRE(zone2.enter_event == false);
     REQUIRE(zone2.exit_event == false);
@@ -95,7 +92,6 @@ TEST_CASE("Check Defaults Test") {
     REQUIRE(zone3.radius == 0.0);
     REQUIRE(zone3.center_lat == 0.0);
     REQUIRE(zone3.center_lon == 0.0);
-    REQUIRE(zone3.confidence_number == 0);
     REQUIRE(zone3.enable == false);
     REQUIRE(zone3.enter_event == false);
     REQUIRE(zone3.exit_event == false);

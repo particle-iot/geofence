@@ -23,10 +23,6 @@ if (GCOV_ENABLE)
   set(COVERAGE_CFLAGS -fno-inline -fprofile-arcs -ftest-coverage -O0 -g)
 endif()
 
-#add_subdirectory(src)
 include_directories(src/ test/)
-
-#add_subdirectory(test)
-#include(test)
 
 add_executable(geofence-test test/test.cpp src/Geofence.cpp test/Particle.cpp)
