@@ -28,12 +28,16 @@ constexpr PointData TestPoints[] = {
     { -0.440480, -64.598314, 0.0, 0.0, 0 },  // Papera Brazil
 };
 
+std::atomic<int> badCount(0);
 std::atomic<int> enterCount(0);
 std::atomic<int> exitCount(0);
 std::atomic<int> outsideCount(0);
 std::atomic<int> insideCount(0);
 void geofenceCallback(CallbackContext& context) {
     switch(context.event_type) {
+        case GeofenceEventType::POOR_LOCATION:
+            badCount++;
+        break;
         case GeofenceEventType::ENTER:
             enterCount++;
         break;
@@ -112,33 +116,41 @@ TEST_CASE("Disabled Test") {
     REQUIRE(test.RegisterGeofenceCallback(geofenceCallback) == SYSTEM_ERROR_NONE);
 
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[0]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[1]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[2]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[3]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[4]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[5]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 }
 
@@ -167,18 +179,22 @@ TEST_CASE("Circular Outside Event Test") {
 
     test.UpdateGeofencePoint(TestPoints[0]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 4);
 
     test.UpdateGeofencePoint(TestPoints[1]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 4);
 
     test.UpdateGeofencePoint(TestPoints[2]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 4);
 
     test.UpdateGeofencePoint(TestPoints[3]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 4);
 }
 
@@ -210,10 +226,12 @@ TEST_CASE("Circular Inside Event Test") {
 
     test.UpdateGeofencePoint(TestPoints[0]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[6]); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 }
 
@@ -245,22 +263,27 @@ TEST_CASE("Circular Enter Event Test") {
 
     test.UpdateGeofencePoint(TestPoints[0]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[6]); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 1); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[6]); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[0]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[6]); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 1); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 }
 
@@ -292,23 +315,28 @@ TEST_CASE("Circular Exit Event Test") {
 
     test.UpdateGeofencePoint(TestPoints[6]); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[0]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 1); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     //outside the zone
     test.UpdateGeofencePoint(TestPoints[0]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[6]); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[0]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 1); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 }
 
@@ -331,23 +359,28 @@ TEST_CASE("Multiple Circular Zone Events Test") {
 
     test.UpdateGeofencePoint(TestPoints[6]); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[0]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 1); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
 
     //outside the zone
     test.UpdateGeofencePoint(TestPoints[1]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
 
     test.UpdateGeofencePoint(TestPoints[6]); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 1); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[0]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 1); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
 }
 
@@ -377,71 +410,83 @@ TEST_CASE("Verification Time Circular Zone Events Test") {
     System.inc(2000);
     test.UpdateGeofencePoint(TestPoints[1]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     //outside the zone
     System.inc(3000);
     test.UpdateGeofencePoint(TestPoints[1]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
 
     //outside the zone
     System.inc(1000);
     test.UpdateGeofencePoint(TestPoints[0]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
 
     //inside the zone
     test.UpdateGeofencePoint(TestPoints[6]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     //inside the zone
     System.inc(2000);
     test.UpdateGeofencePoint(TestPoints[6]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
      //inside the zone
     System.inc(3000);
     test.UpdateGeofencePoint(TestPoints[6]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 1); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 
     //inside the zone
     System.inc(1000);
     test.UpdateGeofencePoint(TestPoints[6]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 
     //outside the zone
     System.inc(3000);
     test.UpdateGeofencePoint(TestPoints[1]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     //outside the zone
     System.inc(1000);
     test.UpdateGeofencePoint(TestPoints[0]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     //outside the zone
     System.inc(2000);
     test.UpdateGeofencePoint(TestPoints[0]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 1); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
 
     //outside the zone
     System.inc(1000);
     test.UpdateGeofencePoint(TestPoints[0]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
 
     //outside the zone
     System.inc(2000);
     test.UpdateGeofencePoint(TestPoints[0]);
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
 }
 
@@ -466,18 +511,22 @@ TEST_CASE("Polygonal Inside Event Test") {
 
     test.UpdateGeofencePoint(TestPoints[3]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[4]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[5]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[6]); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 }
 
@@ -502,18 +551,22 @@ TEST_CASE("International Dateline Polygonal Inside Event Test") {
 
     test.UpdateGeofencePoint(TestPoints[3]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[4]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[5]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[7]); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 }
 
@@ -538,18 +591,22 @@ TEST_CASE("Southern hemisphere Polygonal Inside Event Test") {
 
     test.UpdateGeofencePoint(TestPoints[3]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[4]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[5]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[8]); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 }
 
@@ -574,18 +631,22 @@ TEST_CASE("Brazil Equator Crossing Polygon Inside Event Test") {
 
     test.UpdateGeofencePoint(TestPoints[3]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[4]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[5]); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(TestPoints[10]); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 }
 
@@ -609,6 +670,7 @@ TEST_CASE("Disabled Point Polygon Inside Event Test") {
 
     test.UpdateGeofencePoint(TestPoints[9]); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 
     //makes a triangle now, which puts the point to the outside of geofence
@@ -617,6 +679,7 @@ TEST_CASE("Disabled Point Polygon Inside Event Test") {
 
     test.UpdateGeofencePoint(TestPoints[9]); //outside the zone now since removed the point
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0);
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
 }
 
@@ -650,23 +713,28 @@ TEST_CASE("Confidence Level Test") {
     // Set the system to use a mavimum of 5.0 DOP
     test.SetMaximumHdopLevel(5.0);
 
-    // Test teh normal case where the HDOP is under the max DOP limit
+    // Test the normal case where the HDOP is under the max DOP limit
     test.UpdateGeofencePoint(ucsf); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0); // Not considered a poor location
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 
     test.UpdateGeofencePoint(mrbread); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0); // Not considered a poor location
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 1); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
 
     // Go back inside of the zone and try updating with a poor outside point
     test.UpdateGeofencePoint(ucsf); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0); // Not considered a poor location
     REQUIRE(enterCount.exchange(0) == 1); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 
     mrbread.hdop = 6.0; // worse than the 5.0 limit
     test.UpdateGeofencePoint(mrbread); //outside the zone but should be ignored
     test.loop();
+    // The poor location count should have been indicated
+    REQUIRE(badCount.exchange(0) == 1);
     // No counter change means there are no geofences evaluated
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 0);
 
@@ -674,10 +742,12 @@ TEST_CASE("Confidence Level Test") {
     mrbread.hdop = 4.0; // better than the 5.0 limit
     test.UpdateGeofencePoint(mrbread); //outside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0); // Not considered a poor location
     REQUIRE(enterCount.exchange(0) == 0); REQUIRE(exitCount.exchange(0) == 1); REQUIRE(insideCount.exchange(0) == 0); REQUIRE(outsideCount.exchange(0) == 1);
 
     // Back inside the zone
     test.UpdateGeofencePoint(ucsf); //inside the zone
     test.loop();
+    REQUIRE(badCount.exchange(0) == 0); // Not considered a poor location
     REQUIRE(enterCount.exchange(0) == 1); REQUIRE(exitCount.exchange(0) == 0); REQUIRE(insideCount.exchange(0) == 1); REQUIRE(outsideCount.exchange(0) == 0);
 }

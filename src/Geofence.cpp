@@ -28,15 +28,21 @@ void Geofence::init() {
 }
 
 void Geofence::loop() {
-    // If the current geocoordinate doesn't meet the DOP requirement then there
-    // is nothing to do
-    if (_geofence_point.hdop > _maximumDop) {
-        return;
-    }
-
     auto zone_index = 0;
     for(auto zone : GeofenceZones) {
         if(zone.enable) {
+            // If the current geocoordinate doesn't meet the DOP requirement then there
+            // is nothing to do
+            if (_geofence_point.hdop > _maximumDop) {
+                CallbackContext context;
+                context.event_type = GeofenceEventType::POOR_LOCATION;
+                context.index = zone_index;
+                for(auto callback : EventCallback) {
+                    callback(context);
+                }
+                continue; // Go to next zone
+            }
+
             bool outside_geofence =
                 (zone.shape_type == GeofenceShapeType::CIRCULAR) ?
                     IsCircularGeofenceOutside(zone) :

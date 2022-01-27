@@ -43,11 +43,12 @@ using GeofenceEventCallback =
 constexpr int NUM_OF_POLYGON_POINTS = 10;
 
 enum class GeofenceEventType {
-    UNKNOWN,
-    INSIDE,
-    OUTSIDE,
-    ENTER,
-    EXIT,
+    UNKNOWN,                ///< Unknown event type
+    POOR_LOCATION,          ///< The current location doesn't pass evaluation quality
+    INSIDE,                 ///< The current location is inside of the zone
+    OUTSIDE,                ///< The current location is outside of the zone
+    ENTER,                  ///< The current location has entered the zone
+    EXIT,                   ///< The current location has exited the zone
 };
 
 struct PointData {
