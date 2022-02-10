@@ -17,6 +17,7 @@
 
 #include "Particle.h"
 #include <atomic>
+#include <cmath>
 
 //forward declaration of struct and enum class
 struct CallbackContext;
