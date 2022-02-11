@@ -1,5 +1,5 @@
 # geofence
-Particle library to calculate geofence events asynchronously with callbacks. This library is used in [tracker-edge](https://github.com/particle-iot/tracker-edge).
+Particle library to calculate geofence events asynchronously with callbacks. 
 
 ## Usage 
 
@@ -10,13 +10,14 @@ See [usage.cpp](/examples/usage/usage.cpp) for a basic example. In summary:
 1. update it's known current coordinates periodically in `loop()`.
 
 Register callbacks to do something meaningful when inside, outside, enter, or exit events occur.
+See [tracker-edge](https://github.com/particle-iot/tracker-edge) application where this library is used for real world example usage.
 
 ## Develop
 
-This library has a unit test suite that can be run on a standard Linux or OS X computer.
+This library has a unit test suite that can be run on a standard Linux or OS X computer using `gcc`
 The following describes how to build and execute this test suite:
 
-1. Confirm you are running a gcc compiler that supports >= C++ 14. For example, on OS X `gcc --version` of `Apple LLVM version 10.0.1 (clang-1001.0.46.4)` works.
+1. Install `gcc` that supports C++ 14 or higher and `cmake`.
 1. `git clone` repo and `cd geofence`
 1. mkdir `build`
 1. `cd build`
@@ -26,13 +27,6 @@ The following describes how to build and execute this test suite:
 
 Expect to see the tests pass.
 
-### Validating on real device
-
-TBD: Describe basic idea of this development/validation flow
-
-## Release
-
-TBD: Will describe conventions for cutting a release.
 ### LICENSE
 
 Unless stated elsewhere, file headers or otherwise, all files herein are licensed under an Apache License, Version 2.0. For more information, please read the LICENSE file.

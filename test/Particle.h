@@ -37,6 +37,9 @@
 
 #include "spark_wiring_vector.h"
 
+// this is needed to avoid compile error: `call to 'abs' is ambiguous`
+#include <cmath>
+
 typedef uint32_t system_tick_t;
 
 using namespace spark;
